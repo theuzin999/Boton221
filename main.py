@@ -162,8 +162,8 @@ def initialize_game_elements(driver):
             driver.switch_to.frame(iframe)
             sleep(5)  # tempo pra spribe montar DOM
             print(f"✅ Iframe encontrado com XPath: {xpath}")
+            driver.switch_to.default_content()  # <- CORRETO: voltar ao DOM principal ANTES do break
             break
-            driver.switch_to.default_content()  # <<< ADICIONAR AQUI
         except Exception:
             continue
 
@@ -179,6 +179,7 @@ def initialize_game_elements(driver):
                 driver.switch_to.frame(iframe)
                 sleep(5)
                 print(f"✅ Iframe encontrado na 2ª tentativa: {xpath}")
+                driver.switch_to.default_content()  # <- idem aqui
                 break
             except Exception:
                 continue
@@ -186,6 +187,11 @@ def initialize_game_elements(driver):
     # === procurar histórico dentro do iframe
     historico_elemento = None
     if iframe:
+        # volta para o iframe para tentar dentro dele
+        try:
+            driver.switch_to.frame(iframe)
+        except Exception:
+            pass
         for selector, by_method in POSSIVEIS_HISTORICOS:
             try:
                 historico_elemento = WebDriverWait(driver, 8).until(
