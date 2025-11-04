@@ -14,34 +14,26 @@ import pytz
 import json # Necessário para ler o JSON da variável de ambiente
 
 # =============================================================
-# 🔥 CONFIGURAÇÃO FIREBASE (CORRIGIDA PARA VARIÁVEL DE AMBIENTE)
+# 🔥 CONFIGURAÇÃO FIREBASE DIRETO PELO ARQUIVO (MODO CLOUD)
 # =============================================================
+SERVICE_ACCOUNT_FILE = 'serviceAccountKey.json'
 DATABASE_URL = os.getenv("DATABASE_URL")
-credJson = os.getenv("SERVICE_ACCOUNT_KEY") # Chave JSON como string
-
-# 🛑 LINHAS DE DEBUG PARA IDENTIFICAR FALHA NA VARIÁVEL DE AMBIENTE 🛑
-print("DB_URL:", DATABASE_URL)
-print("KEY EXISTS:", credJson is not None)
-print("KEY SIZE:", len(str(credJson)) if credJson else 0)
-# ------------------------------------------------------------------
 
 try:
-    if credJson is None or not credJson.strip():
-        raise ValueError("SERVICE_ACCOUNT_KEY está vazia ou não configurada no ambiente.")
-        
-    # Tenta carregar o JSON da variável de ambiente SERVICE_ACCOUNT_KEY
-    cred = credentials.Certificate(json.loads(credJson))
-    
-    # O RESTO DO SEU CÓDIGO DO FIREBASE...
-    firebase_admin.initialize_app(cred, {
-        "databaseURL": DATABASE_URL
-    })
-    print("✅ Firebase Admin SDK inicializado com sucesso.")
+    if not firebase_admin._apps:
+        cred = credentials.Certificate(SERVICE_ACCOUNT_FILE)
+        firebase_admin.initialize_app(cred, {
+            'databaseURL': DATABASE_URL
+        })
+    print("✅ Firebase Admin SDK inicializado com sucesso usando ARQUIVO.")
+except FileNotFoundError:
+    print("\n❌ ERRO CRÍTICO: Arquivo 'serviceAccountKey.json' não encontrado.")
+    print("Ele precisa estar na raiz do projeto na SquareCloud.")
+    exit()
 except Exception as e:
-    # O bot não vai parar, mas o erro de Firebase será impresso.
-    print(f"\n❌ ERRO CRÍTICO DE CONEXÃO FIREBASE: {e}")
-    print("⚠️ Por causa da falha no Firebase, os multiplicadores NÃO SERÃO SALVOS no banco de dados.")
-
+    print(f"\n❌ ERRO DE CONEXÃO FIREBASE: {e}")
+    exit()
+    
 # =============================================================
 # ⚙️ VARIÁVEIS PRINCIPAIS
 # =============================================================
@@ -201,7 +193,6 @@ def process_login(driver):
 # 🚀 FUNÇÃO DE INICIALIZAÇÃO DO DRIVER (CORRIGIDA PARA DOCKER)
 # =============================================================
 def start_driver():
-    """Inicializa o driver apontando para o Chromium do sistema."""
     options = webdriver.ChromeOptions()
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
@@ -212,14 +203,10 @@ def start_driver():
     options.add_argument("--disable-features=BlinkGenPropertyTrees")
     options.add_argument("--window-size=1920,1080")
 
-    # Aponta para o binário do Chromium instalado pelo Dockerfile
-    options.binary_location = os.environ.get("CHROME_BIN", "/usr/bin/chromium") 
-    
-    # Aponta para o ChromeDriver do sistema
-    service = Service(executable_path=os.environ.get("CHROME_DRIVER_PATH", "/usr/bin/chromedriver"))
-    
-    return webdriver.Chrome(service=service, options=options)
+    options.binary_location = "/usr/bin/chromium"
+    service = Service("/usr/bin/chromedriver")
 
+    return webdriver.Chrome(service=service, options=options)
 
 # =============================================================
 # 🤖 LOOP PRINCIPAL DO BOT
