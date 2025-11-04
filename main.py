@@ -163,6 +163,7 @@ def initialize_game_elements(driver):
             sleep(5)  # tempo pra spribe montar DOM
             print(f"✅ Iframe encontrado com XPath: {xpath}")
             break
+            driver.switch_to.default_content()  # <<< ADICIONAR AQUI
         except Exception:
             continue
 
