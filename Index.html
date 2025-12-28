@@ -9,13 +9,11 @@
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
 
     <style>
-        /* --- ESTILO GERAL E CORES (ROXO E PRETO) --- */
+        /* --- ESTILO GERAL (ROXO E PRETO) --- */
         * {
             box-sizing: border-box;
             user-select: none;
             -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
         }
 
         body {
@@ -36,7 +34,6 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* --- TELA DE LOGIN --- */
         #login-screen {
             position: fixed;
             top: 0;
@@ -113,14 +110,12 @@
             display: none;
         }
 
-        /* --- VISUALIZADOR DE PDF --- */
         #pdf-container {
             display: none;
             flex-direction: column;
             align-items: center;
             padding: 20px 0;
             width: 100%;
-            position: relative;
         }
 
         .pdf-page {
@@ -128,7 +123,7 @@
             margin-bottom: 20px;
             box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
             border: 1px solid #333;
-            max-width: 100%;
+            max-width: 95%;
         }
 
         canvas {
@@ -137,7 +132,6 @@
             height: auto;
         }
 
-        /* --- MARCA D'ÁGUA --- */
         .watermark-layer {
             position: absolute;
             top: 0;
@@ -192,14 +186,13 @@
     <div id="pdf-container"></div>
 
     <script>
-        // CONFIGURAÇÕES DE SENHA
+        // CONFIGURAÇÕES
         const SITE_PASS = "mtzadas01";
         const PDF_PASS = "lucaspatodotheus"; 
         
-        // LINK DA RELEASE JÁ INCLUSO ABAIXO:
-        const PDF_FILE = "https://github.com/theuzin999/Site-ebook-sensi/releases/download/v1/sensi.pdf";
+        // Link via jsDelivr (Resolve o erro de bloqueio/CORS do Netlify)
+        const PDF_FILE = "https://cdn.jsdelivr.net/gh/theuzin999/Site-ebook-sensi@v1/sensi.pdf";
 
-        // --- FUNÇÃO DE LOGIN ---
         function checkLogin() {
             const input = document.getElementById('passwordInput');
             const error = document.getElementById('errorMsg');
@@ -221,11 +214,11 @@
             }
         }
 
-        // --- CARREGAMENTO DO PDF ---
         async function loadPDF() {
             const container = document.getElementById('pdf-container');
             
             try {
+                // Carrega o PDF do link externo
                 const loadingTask = pdfjsLib.getDocument({
                     url: PDF_FILE,
                     password: PDF_PASS 
@@ -267,12 +260,12 @@
                 }
 
             } catch (error) {
-                alert("Erro ao carregar o PDF. Verifique se o link da Release está correto.");
+                alert("Erro ao carregar o arquivo. Verifique se o PDF ainda está na Release v1 do GitHub.");
                 console.error(error);
             }
         }
 
-        // BLOQUEIOS BÁSICOS
+        // Bloqueio de clique direito
         document.addEventListener('contextmenu', event => event.preventDefault());
     </script>
 </body>
