@@ -12,7 +12,7 @@
         /* --- ESTILO GERAL E CORES (ROXO E PRETO) --- */
         * {
             box-sizing: border-box;
-            user-select: none; /* Impede seleção de texto */
+            user-select: none;
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
@@ -92,11 +92,6 @@
             text-align: center;
         }
 
-        input[type="password"]:focus {
-            border-color: #bf00ff;
-            box-shadow: 0 0 10px #bf00ff;
-        }
-
         button {
             width: 100%;
             padding: 12px;
@@ -111,11 +106,6 @@
             text-transform: uppercase;
         }
 
-        button:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 15px #8a2be2;
-        }
-
         .error-msg {
             color: #ff3333;
             margin-top: 10px;
@@ -125,7 +115,7 @@
 
         /* --- VISUALIZADOR DE PDF --- */
         #pdf-container {
-            display: none; /* Escondido até logar */
+            display: none;
             flex-direction: column;
             align-items: center;
             padding: 20px 0;
@@ -158,27 +148,20 @@
             flex-wrap: wrap;
             justify-content: space-around;
             align-content: space-around;
-            pointer-events: none; /* Clica através dela */
+            pointer-events: none;
             overflow: hidden;
             z-index: 10;
         }
 
         .watermark-text {
-            color: rgba(255, 255, 255, 0.08); /* Quase invisível */
+            color: rgba(255, 255, 255, 0.08);
             font-size: 2rem;
             font-weight: bold;
             transform: rotate(-45deg);
-            user-select: none;
             white-space: nowrap;
             margin: 50px;
         }
 
-        /* --- BLOQUEIO DE IMPRESSÃO --- */
-        @media print {
-            body { display: none !important; }
-        }
-
-        /* --- LOADER --- */
         .loader {
             display: none;
             border: 4px solid #f3f3f3;
@@ -206,14 +189,15 @@
         </div>
     </div>
 
-    <div id="pdf-container">
-        </div>
+    <div id="pdf-container"></div>
 
     <script>
         // CONFIGURAÇÕES DE SENHA
         const SITE_PASS = "mtzadas01";
         const PDF_PASS = "lucaspatodotheus"; 
-        const PDF_FILE = "sensi.pdf";
+        
+        // LINK DA RELEASE JÁ INCLUSO ABAIXO:
+        const PDF_FILE = "https://github.com/theuzin999/Site-ebook-sensi/releases/download/v1/sensi.pdf";
 
         // --- FUNÇÃO DE LOGIN ---
         function checkLogin() {
@@ -222,18 +206,15 @@
             const loader = document.getElementById('loader');
 
             if (input.value === SITE_PASS) {
-                // Senha correta
                 error.style.display = 'none';
                 loader.style.display = 'block';
                 
-                // Inicia carregamento do PDF
                 setTimeout(() => {
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('pdf-container').style.display = 'flex';
                     loadPDF();
-                }, 1000); // Pequeno delay pra dar um charme
+                }, 1000);
             } else {
-                // Senha incorreta
                 error.style.display = 'block';
                 input.value = '';
                 input.focus();
@@ -245,7 +226,6 @@
             const container = document.getElementById('pdf-container');
             
             try {
-                // Carrega o documento usando a senha interna
                 const loadingTask = pdfjsLib.getDocument({
                     url: PDF_FILE,
                     password: PDF_PASS 
@@ -253,29 +233,22 @@
 
                 const pdf = await loadingTask.promise;
 
-                // Renderiza todas as páginas
                 for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                     const page = await pdf.getPage(pageNum);
-                    
-                    // Ajusta escala (zoom)
                     const viewport = page.getViewport({ scale: 1.5 });
                     
-                    // Cria div para a página
                     const pageDiv = document.createElement('div');
                     pageDiv.className = 'pdf-page';
                     pageDiv.style.width = viewport.width + 'px';
                     pageDiv.style.height = viewport.height + 'px';
 
-                    // Cria Canvas
                     const canvas = document.createElement('canvas');
                     const context = canvas.getContext('2d');
                     canvas.height = viewport.height;
                     canvas.width = viewport.width;
 
-                    // Cria camada de Marca D'água
                     const watermarkLayer = document.createElement('div');
                     watermarkLayer.className = 'watermark-layer';
-                    // Adiciona várias marcas d'água
                     for(let i=0; i<6; i++) {
                         const wm = document.createElement('div');
                         wm.className = 'watermark-text';
@@ -287,7 +260,6 @@
                     pageDiv.appendChild(watermarkLayer);
                     container.appendChild(pageDiv);
 
-                    // Desenha o PDF no canvas
                     await page.render({
                         canvasContext: context,
                         viewport: viewport
@@ -295,33 +267,13 @@
                 }
 
             } catch (error) {
-                alert("Erro ao carregar o PDF. Verifique se o arquivo 'sensi.pdf' está na mesma pasta.");
+                alert("Erro ao carregar o PDF. Verifique se o link da Release está correto.");
                 console.error(error);
             }
         }
 
-        // --- BLOQUEIOS DE DEV (DETERRENTES) ---
-        
-        // Bloqueia botão direito
+        // BLOQUEIOS BÁSICOS
         document.addEventListener('contextmenu', event => event.preventDefault());
-
-        // Bloqueia atalhos de teclado comuns (F12, Ctrl+U, Ctrl+S, Ctrl+P)
-        document.onkeydown = function(e) {
-            if (e.keyCode == 123) { return false; } // F12
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) { return false; } // Ctrl+Shift+I
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) { return false; } // Ctrl+Shift+C
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) { return false; } // Ctrl+Shift+J
-            if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { return false; } // Ctrl+U
-            if (e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) { return false; } // Ctrl+S
-            if (e.ctrlKey && e.keyCode == 'P'.charCodeAt(0)) { return false; } // Ctrl+P
-        }
-
-        // Tenta limpar o console se alguém abrir
-        setInterval(() => {
-            console.clear();
-            console.log("%c ACESSO RESTRITO - MTZADA", "color: #8a2be2; font-size: 20px; font-weight: bold;");
-        }, 2000);
-
     </script>
 </body>
 </html>
