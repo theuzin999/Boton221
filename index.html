@@ -12,15 +12,15 @@
         /* --- ESTILO GERAL E CORES (ROXO E PRETO) --- */
         * {
             box-sizing: border-box;
-            user-select: none; /* Impede seleção de texto */
+            user-select: none;
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            margin: 0;
-            padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #000000, #1a0b2e, #2d0046, #000000);
             background-size: 400% 400%;
@@ -123,29 +123,33 @@
             display: none;
         }
 
-        /* --- VISUALIZADOR DE PDF --- */
+        /* --- VISUALIZADOR DE PDF CORRIGIDO --- */
         #pdf-container {
-            display: none; /* Escondido até logar */
+            display: none; 
             flex-direction: column;
-            align-items: center;
-            padding: 0; /* REMOVIDO O PADDING VERTICAL */
+            align-items: center; /* Centraliza horizontalmente */
+            justify-content: flex-start;
             width: 100%;
-            position: relative;
+            background-color: transparent; /* Remove fundo extra se houver */
         }
 
         .pdf-page {
             position: relative;
-            margin-bottom: 0; /* REMOVIDA A MARGEM INFERIOR */
-            box-shadow: none; /* REMOVIDA A SOMBRA */
-            border: none; /* REMOVIDA A BORDA */
-            max-width: 100%;
-            line-height: 0; /* Garante que não haja espaço extra abaixo do canvas */
+            width: 100%; /* Força a ocupar a largura total */
+            display: flex;
+            justify-content: center;
+            line-height: 0; /* Remove espaço de fonte */
+            font-size: 0;
+            margin: 0;
+            padding: 0;
+            border: none;
         }
 
         canvas {
             display: block;
-            max-width: 100%;
-            height: auto;
+            width: 100% !important; /* Garante que estique na tela do celular */
+            height: auto !important; /* Mantém a proporção correta */
+            object-fit: contain;
         }
 
         /* --- BLOQUEIO DE IMPRESSÃO --- */
@@ -182,7 +186,7 @@
     </div>
 
     <div id="pdf-container">
-        </div>
+    </div>
 
     <script>
         // CONFIGURAÇÕES DE SENHA
@@ -206,7 +210,7 @@
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('pdf-container').style.display = 'flex';
                     loadPDF();
-                }, 1000); // Pequeno delay pra dar um charme
+                }, 1000); 
             } else {
                 // Senha incorreta
                 error.style.display = 'block';
@@ -232,14 +236,15 @@
                 for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                     const page = await pdf.getPage(pageNum);
                     
-                    // Ajusta escala (zoom) - Aumentei um pouco para cobrir melhor a tela
-                    const viewport = page.getViewport({ scale: 1.5 });
+                    // ESCALA MAIOR: Gera a imagem com alta qualidade
+                    const viewport = page.getViewport({ scale: 2.0 });
                     
                     // Cria div para a página
                     const pageDiv = document.createElement('div');
                     pageDiv.className = 'pdf-page';
-                    pageDiv.style.width = viewport.width + 'px';
-                    pageDiv.style.height = viewport.height + 'px';
+                    
+                    // ATENÇÃO: Removemos a definição fixa de altura/largura aqui (px)
+                    // Deixamos o CSS controlar o tamanho (100% width)
 
                     // Cria Canvas
                     const canvas = document.createElement('canvas');
@@ -264,22 +269,18 @@
         }
 
         // --- BLOQUEIOS DE DEV (DETERRENTES) ---
-        
-        // Bloqueia botão direito
         document.addEventListener('contextmenu', event => event.preventDefault());
 
-        // Bloqueia atalhos de teclado comuns (F12, Ctrl+U, Ctrl+S, Ctrl+P)
         document.onkeydown = function(e) {
-            if (e.keyCode == 123) { return false; } // F12
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) { return false; } // Ctrl+Shift+I
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) { return false; } // Ctrl+Shift+C
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) { return false; } // Ctrl+Shift+J
-            if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { return false; } // Ctrl+U
-            if (e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) { return false; } // Ctrl+S
-            if (e.ctrlKey && e.keyCode == 'P'.charCodeAt(0)) { return false; } // Ctrl+P
+            if (e.keyCode == 123) { return false; } 
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) { return false; } 
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) { return false; } 
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) { return false; } 
+            if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { return false; } 
+            if (e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) { return false; } 
+            if (e.ctrlKey && e.keyCode == 'P'.charCodeAt(0)) { return false; } 
         }
 
-        // Tenta limpar o console se alguém abrir
         setInterval(() => {
             console.clear();
             console.log("%c ACESSO RESTRITO - MTZADA", "color: #8a2be2; font-size: 20px; font-weight: bold;");
