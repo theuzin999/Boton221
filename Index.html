@@ -188,6 +188,247 @@
     <script>
         // CONFIGURAÇÕES
         const SITE_PASS = "mtzadas01";
+        const PDF_PASS = "lucaspatodotheus";
+        
+        /**
+         * LINK DA RELEASE VIA CDN (jsDelivr)
+         * Isso permite que o Netlify acesse o arquivo sensi.pdf que está na sua Release v1 do GitHub
+         */
+        const PDF_FILE = "https://cdn.jsdelivr.net/gh/theuzin999/Site-ebook-sensi@v1/sensi.pdf";
+
+        function checkLogin() {
+            const input = document.getElementById('passwordInput');
+            const error = document.getElementById('errorMsg');
+            const loader = document.getElementById('loader');
+
+            if (input.value === SITE_PASS) {
+                error.style.display = 'none';
+                loader.style.display = 'block';
+                
+                setTimeout(() => {
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('pdf-container').style.display = 'flex';
+                    loadPDF();
+                }, 1000);
+            } else {
+                error.style.display = 'block';
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        async function loadPDF() {
+            const container = document.getElementById('pdf-container');
+            
+            try {
+                // Tenta carregar o PDF descriptografando com a senha fornecida
+                const loadingTask = pdfjsLib.getDocument({
+                    url: PDF_FILE,
+                    password: PDF_PASS 
+                });
+
+                const pdf = await loadingTask.promise;
+
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    const page = await pdf.getPage(pageNum);
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    
+                    const pageDiv = document.createElement('div');
+                    pageDiv.className = 'pdf-page';
+                    pageDiv.style.width = viewport.width + 'px';
+                    pageDiv.style.height = viewport.height + 'px';
+
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    const watermarkLayer = document.createElement('div');
+                    watermarkLayer.className = 'watermark-layer';
+                    for(let i=0; i<6; i++) {
+                        const wm = document.createElement('div');
+                        wm.className = 'watermark-text';
+                        wm.innerText = 'mtzada';
+                        watermarkLayer.appendChild(wm);
+                    }
+
+                    pageDiv.appendChild(canvas);
+                    pageDiv.appendChild(watermarkLayer);
+                    container.appendChild(pageDiv);
+
+                    await page.render({
+                        canvasContext: context,
+                        viewport: viewport
+                    }).promise;
+                }
+
+            } catch (error) {
+                // Se o link falhar ou o arquivo não existir na release v1, exibe este alerta
+                alert("Erro ao carregar o arquivo. Verifique se o PDF ainda está na Release v1 do GitHub.");
+                console.error(error);
+            }
+        }
+
+        // Bloqueia o menu de contexto (clique direito)
+        document.addEventListener('contextmenu', event => event.preventDefault());
+    </script>
+</body>
+</html>
+
+#login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(10px);
+        }
+
+        .login-box {
+            background: rgba(40, 10, 60, 0.6);
+            padding: 40px;
+            border-radius: 15px;
+            border: 1px solid #8a2be2;
+            box-shadow: 0 0 20px #8a2be2;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .logo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+            border: 2px solid #8a2be2;
+            box-shadow: 0 0 15px #8a2be2;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #d8b4fe;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #5e18a8;
+            background: #0f0518;
+            color: white;
+            outline: none;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #5e18a8, #8a2be2);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .error-msg {
+            color: #ff3333;
+            margin-top: 10px;
+            font-size: 14px;
+            display: none;
+        }
+
+        #pdf-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            width: 100%;
+        }
+
+        .pdf-page {
+            position: relative;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
+            border: 1px solid #333;
+            max-width: 95%;
+        }
+
+        canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .watermark-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-content: space-around;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .watermark-text {
+            color: rgba(255, 255, 255, 0.08);
+            font-size: 2rem;
+            font-weight: bold;
+            transform: rotate(-45deg);
+            white-space: nowrap;
+            margin: 50px;
+        }
+
+        .loader {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #8a2be2;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <img src="https://i.postimg.cc/ydGP1k9g/Picsart-25-12-28-01-59-54-394.jpg" alt="Logo" class="logo">
+            <h2>Área Restrita</h2>
+            <input type="password" id="passwordInput" placeholder="Digite a senha de acesso">
+            <button onclick="checkLogin()">Entrar</button>
+            <div class="loader" id="loader"></div>
+            <p class="error-msg" id="errorMsg">Senha incorreta!</p>
+        </div>
+    </div>
+
+    <div id="pdf-container"></div>
+
+    <script>
+        // CONFIGURAÇÕES
+        const SITE_PASS = "mtzadas01";
         const PDF_PASS = "lucaspatodotheus"; 
         
         // Link via jsDelivr (Resolve o erro de bloqueio/CORS do Netlify)
